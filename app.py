@@ -1,5 +1,6 @@
-from openai import AzureOpenAI
 import streamlit as st
+from azure.ai.projects import AIProjectClient
+from azure.identity import ClientSecretCredential
 
 # Configuración de la interfaz
 st.set_page_config(
@@ -8,11 +9,19 @@ st.set_page_config(
 st.title("Refacciones del Norte")
 st.caption("Asistente Virtual de Control y Validación de Compras")
 
-# Inicializar cliente de Azure OpenAI directamente con la Clave API
-client = AzureOpenAI(
-    api_key=st.secrets["AZURE_OPENAI_API_KEY"],
-    azure_endpoint=st.secrets["ENDPOINT"],
-    api_version="2024-02-15-preview",
+# Datos de conexión del proyecto en Microsoft Foundry
+ENDPOINT = st.secrets["ENDPOINT"]
+AGENT_NAME = "RefaccionesNorte-AI"
+
+# Credenciales de Service Principal leídas desde Streamlit Secrets
+credential = ClientSecretCredential(
+    tenant_id=st.secrets["AZURE_TENANT_ID"],
+    client_id=st.secrets["AZURE_CLIENT_ID"],
+    client_secret=st.secrets["AZURE_CLIENT_SECRET"],
+)
+
+project_client = AIProjectClient(
+    endpoint=ENDPOINT, credential=credential, allow_preview=True
 )
 
 # Inicializar historial de chat
@@ -32,23 +41,19 @@ if prompt := st.chat_input("Escribe tu consulta sobre refacciones o sensores..."
 
   with st.chat_message("assistant"):
     try:
-      response = client.chat.completions.create(
-          model="gpt-4o",  # <--- Asegúrate de que este sea exactamente el nombre de tu despliegue en Azure OpenAI
-          messages=[
-              {
-                  "role": "system",
-                  "content": (
-                      "Eres un asistente virtual de control y validación de"
-                      " compras para Refacciones del Norte."
-                  ),
-              },
-              {"role": "user", "content": prompt},
-          ],
+      # Conexión al agente en Azure AI Foundry
+      openai_client = project_client.get_openai_client(agent_name=AGENT_NAME)
+      conversation = openai_client.conversations.create()
+
+      response = openai_client.responses.create(
+          conversation_id=conversation.id,
+          input=[{"role": "user", "content": prompt}],
       )
-      reply_text = response.choices[0].message.content
+
+      reply_text = response.output[0].content[0].text.value
       st.markdown(reply_text)
       st.session_state.messages.append(
           {"role": "assistant", "content": reply_text}
       )
     except Exception as e:
-      st.error(f"Error al conectar con la API: {e}")
+      st.error(f"Error al conectar con el agente de Azure: {e}")
