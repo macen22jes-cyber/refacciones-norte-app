@@ -9,11 +9,11 @@ st.set_page_config(
 st.title("Refacciones del Norte")
 st.caption("Asistente Virtual de Control y Validación de Compras")
 
-# Datos de conexión del proyecto en Microsoft Foundry leídos de los Secrets
+# Datos de conexión del proyecto en Microsoft Foundry
 ENDPOINT = st.secrets["ENDPOINT"]
 AGENT_NAME = "RefaccionesNorte-AI"
 
-# Credenciales de Service Principal leídas directamente desde Streamlit Secrets
+# Credenciales de Service Principal leídas desde Streamlit Secrets
 credential = ClientSecretCredential(
     tenant_id=st.secrets["AZURE_TENANT_ID"],
     client_id=st.secrets["AZURE_CLIENT_ID"],
