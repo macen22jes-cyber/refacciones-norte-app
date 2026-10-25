@@ -8,11 +8,11 @@ st.set_page_config(
 st.title("Refacciones del Norte")
 st.caption("Asistente Virtual de Control y Validación de Compras")
 
-# Inicializar el cliente de Azure OpenAI directamente con la Clave API
+# Inicializar cliente de Azure OpenAI directamente con la Clave API
 client = AzureOpenAI(
     api_key=st.secrets["AZURE_OPENAI_API_KEY"],
     azure_endpoint=st.secrets["ENDPOINT"],
-    api_version="2024-05-01-preview",
+    api_version="2024-02-15-preview",
 )
 
 # Inicializar historial de chat
@@ -32,9 +32,8 @@ if prompt := st.chat_input("Escribe tu consulta sobre refacciones o sensores..."
 
   with st.chat_message("assistant"):
     try:
-      # Llamada directa al modelo usando chat completions
       response = client.chat.completions.create(
-          model="gpt-4o",  # O el nombre de tu modelo desplegado en Azure
+          model="gpt-4o",  # <--- Asegúrate de que este sea exactamente el nombre de tu despliegue en Azure OpenAI
           messages=[
               {
                   "role": "system",
