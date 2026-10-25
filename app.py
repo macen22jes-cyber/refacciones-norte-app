@@ -1,10 +1,10 @@
 import streamlit as st
 from azure.ai.projects import AIProjectClient
-from azure.identity import DefaultAzureCredential
+from azure.identity import ClientSecretCredential
 
 # Configuración de la interfaz
-st.set_page_config(page_title="Refacciones del Norte - Asistente IA", page_icon="🔧")
-st.title("🔧 Refacciones del Norte")
+st.set_page_config(page_title="Refacciones del Norte - Asistente IA", page_icon="")
+st.title("Refacciones del Norte")
 st.caption("Asistente Virtual de Control y Validación de Compras")
 
 # Datos de conexión de tu proyecto en Microsoft Foundry
@@ -13,9 +13,14 @@ AGENT_NAME = "RefaccionesNorte-AI"
 
 project_client = AIProjectClient(
     endpoint=ENDPOINT,
-    credential=DefaultAzureCredential(),
+    credential=ClientSecretCredential(
+        tenant_id=st.secrets["AZURE_TENANT_ID"],
+        client_id=st.secrets["AZURE_CLIENT_ID"],
+        client_secret=st.secrets["AZURE_CLIENT_SECRET"]
+    ),
     allow_preview=True,
 )
+
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -35,12 +40,12 @@ if prompt := st.chat_input("Escribe tu consulta sobre refacciones o sensores..."
         # Envío de la consulta al agente en Azure
         openai_client = project_client.get_openai_client(agent_name=AGENT_NAME)
         conversation = openai_client.conversations.create()
-        
+
         response = openai_client.responses.create(
             conversation_id=conversation.id,
             input=[{"role": "user", "content": prompt}]
         )
-        
+
         reply_text = response.output[0].content[0].text.value
         st.markdown(reply_text)
         st.session_state.messages.append({"role": "assistant", "content": reply_text})
