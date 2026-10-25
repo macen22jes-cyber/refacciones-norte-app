@@ -11,12 +11,11 @@ st.caption("Asistente Virtual de Control y Validación de Compras")
 ENDPOINT = "https://proyecto2adr-resource.services.ai.azure.com/api/projects/proyecto2adr"
 AGENT_NAME = "RefaccionesNorte-AI"
 
-# Cliente de Azure con autenticación de identidad
-project_client = AIProjectClient.from_connection_string(
-    conn_str=ENDPOINT,
-    credential=DefaultAzureCredential()
+project_client = AIProjectClient(
+    endpoint=ENDPOINT,
+    credential=DefaultAzureCredential(),
+    allow_preview=True,
 )
-
 # Inicializar historial de chat
 if "messages" not in st.session_state:
     st.session_state.messages = []
