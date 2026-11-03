@@ -1,0 +1,5 @@
+flask
+azure-identity
+azure-ai-projects
+azure-ai-documentintelligence
+gunicorn
